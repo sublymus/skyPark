@@ -1,0 +1,19 @@
+Progress: resolved 0, reused 1, downloaded 0, added 0
+Progress: resolved 17, reused 17, downloaded 0, added 0
+ WARN  deprecated @types/pino-pretty@5.0.0: This is a stub types definition. pino-pretty provides its own type definitions, so you do not need this installed.
+ WARN  deprecated @types/pino-std-serializers@4.0.0: This is a stub types definition. pino-std-serializers provides its own type definitions, so you do not need this installed.
+Progress: resolved 434, reused 433, downloaded 0, added 0
+ WARN  deprecated source-map-resolve@0.5.3: See https://github.com/lydell/source-map-resolve#deprecated
+ WARN  deprecated resolve-url@0.2.1: https://github.com/lydell/resolve-url#deprecated
+ WARN  deprecated source-map-url@0.4.1: See https://github.com/lydell/source-map-url#deprecated
+ WARN  deprecated urix@0.1.0: Please see https://github.com/lydell/urix#deprecated
+Progress: resolved 609, reused 608, downloaded 0, added 0
+Packages: +9 -8
++++++++++--------
+Progress: resolved 610, reused 609, downloaded 0, added 9, done
+
+dependencies:
++ @japa/core 7.3.0
++ openapi-types 12.1.0
+
+Done in 4.9s

@@ -9,10 +9,16 @@
 | by AdonisJs service providers for custom code.
 |
 */
-
+import { Ignitor } from '@adonisjs/core/build/standalone'
+import mongoose from 'mongoose'
 import 'reflect-metadata'
 import sourceMapSupport from 'source-map-support'
-import { Ignitor } from '@adonisjs/core/build/standalone'
+//import Log from 'sublymus_logger'
+
+
+let uri = 'mongodb://localhost:27017/skypark'
+mongoose.set('strictQuery', false)
+mongoose.connect(uri)
 
 sourceMapSupport.install({ handleUncaughtExceptions: false })
 

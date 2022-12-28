@@ -17,7 +17,7 @@ const bodyParserConfig: BodyParserConfig = {
   | to avoid body parsing for `GET` requests.
   |
   */
-  whitelistedMethods: ['POST', 'PUT', 'PATCH', 'DELETE'],
+  whitelistedMethods: ['GET','POST', 'PUT', 'PATCH', 'DELETE'],
 
   /*
   |--------------------------------------------------------------------------
