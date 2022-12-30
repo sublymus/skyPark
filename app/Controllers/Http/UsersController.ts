@@ -1,5 +1,4 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
-import mongoose from "mongoose";
 import Log from "sublymus_logger";
 import UserModel from "../../Model/UserModel";
 import AccountsController from "./AccountsController";
@@ -25,8 +24,8 @@ export default class UsersController {
     try {
       const profileId = await new ProfilesController().store(ctx);
       info.profileId = profileId;
-      const favoriesId = await new FavoritesController().store(ctx);
-      info.favoriesId = favoriesId;
+      const favoritesId = await new FavoritesController().store(ctx);
+      info.favoritesId = favoritesId;
       const adressId = await new AdressesController().store(ctx);
       info.adressId = adressId;
       info.email = adressId + "@gmail.com";

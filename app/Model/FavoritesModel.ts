@@ -3,7 +3,7 @@ import mongoose_unique_validation from "mongoose-unique-validation";
 import FolderModel from "./FolderModel";
 
 let favoritesSchema = new Schema({
-  folder : {
+  folders : {
     type : [{
         type : Schema.Types.ObjectId,
         refPath : FolderModel.modelName

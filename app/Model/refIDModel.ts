@@ -8,6 +8,6 @@ let refIDSchema = new Schema({
 
 refIDSchema.add(mongoose_unique_validation);
 
-const refIDModel= mongoose.model("refid", refIDSchema);
+const RefIDModel= mongoose.model("refid", refIDSchema);
 
-export default refIDModel;
+export default RefIDModel;

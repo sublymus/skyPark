@@ -29,4 +29,4 @@ Route.resource('/account', 'AccountsController').apiOnly().except(['store']);
 Route.resource('/profile', 'ProfilesController').apiOnly().except(['store']);
 Route.resource('/folder', 'FoldersController').apiOnly();
 Route.resource('/adress', 'AdressesController').apiOnly().except(['store']);
-Route.resource('/refid', 'ReFidsController').apiOnly();
+Route.resource('/refid', 'ReFidsController').apiOnly().except(['update']);;

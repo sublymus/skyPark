@@ -16,7 +16,7 @@ export default class FavoritesController {
 
    const folderID = await new FoldersController().store(ctx);
     const favorites = new FavoritesModel({
-      folder: [folderID],
+      folders: [folderID],
     });
     await new Promise((resolve, reject) => {
       FavoritesModel.create(favorites, (err) => {
