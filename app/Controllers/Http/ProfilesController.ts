@@ -15,6 +15,7 @@ export default class ProfilesController {
       message: info.profile_message,
       imgProfile: request.file("img-profile")?.clientName, // il faus definire le path et stoker user avant de sauvegarder le file
       banner: request.file("banner")?.clientName, // il faus definire le path et stoker user avant de sauvegarder le file
+      updatedDate: Date.now()
     });
 
     await new Promise((resolve, reject) => {

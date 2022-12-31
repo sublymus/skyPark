@@ -11,6 +11,7 @@ let adressSchema = new Schema({
     required: true,
   },
   description: String,
+  updatedDate: Number
 });
 
 

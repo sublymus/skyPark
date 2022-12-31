@@ -1,4 +1,5 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
+import mongoose from "mongoose";
 import Log from "sublymus_logger";
 import FavoritesModel from "../../Model/FavoritesModel";
 import FoldersController from "./FoldersController";
@@ -9,14 +10,13 @@ export default class FavoritesController {
   //public async create({}: HttpContextContract) {}
 
   public async store(ctx: HttpContextContract) {
-  const info = ctx.request.body().info;
-  
-  info.folderName = "mes préférences";
-  Log('user', 'info : ',info);
+    const info = ctx.request.body().info;
 
-   const folderID = await new FoldersController().store(ctx);
+    info.folderName = "mes préférences";
+    Log("user", "info : ", info);
+
     const favorites = new FavoritesModel({
-      folders: [folderID],
+      folders: [],
     });
     await new Promise((resolve, reject) => {
       FavoritesModel.create(favorites, (err) => {
@@ -26,10 +26,31 @@ export default class FavoritesController {
         // reject({ err: "error", message: err.message });
       });
     });
+
+    info.favoritesID = favorites.id
+    await new FoldersController().store(ctx);
+
     return favorites.id;
   }
 
-  public async show({}: HttpContextContract) {}
+  public async show({ request }: HttpContextContract) {
+    Log("favorites", "show");
+    const id = request.params().id;
+
+    Log("favorites", "show", id);
+
+    let favorites = await FavoritesModel.findOne({
+      _id: new mongoose.Types.ObjectId(id)._id,
+    });
+    if (!favorites) return { status: 404, message: "favorite(s) don't exist" };
+    await favorites.populate({
+      path: "folders",
+      model: "folder",
+      select : "-refIds -__v"
+    });
+
+    return favorites;
+  }
 
   // public async edit({}: HttpContextContract) {}
 

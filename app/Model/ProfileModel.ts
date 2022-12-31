@@ -11,6 +11,8 @@ let profileSchema = new Schema({
     required : true
   },
   message: String,
+  updatedDate: Number
+
 });
 
 profileSchema.add(mongoose_unique_validation);

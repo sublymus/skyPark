@@ -28,16 +28,18 @@ let accountSchema = new Schema({
   },
   adress: {
     type:Schema.Types.ObjectId,
-    refPath :AdressModel.modelName
+    ref :AdressModel.modelName
   },
   favorites: {
     type:Schema.Types.ObjectId,
-    refPath : FavoritesModel.modelName
+    ref : FavoritesModel.modelName
   },
   profile: {
     type:Schema.Types.ObjectId,
-    refPath : ProfileModel.modelName
+    ref : ProfileModel.modelName
   },
+  createdDate: Number,
+  updatedDate: Number
 });
 
 accountSchema.add(mongoose_unique_validation);

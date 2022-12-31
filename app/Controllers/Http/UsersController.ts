@@ -1,4 +1,5 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
+import mongoose from "mongoose";
 import Log from "sublymus_logger";
 import UserModel from "../../Model/UserModel";
 import AccountsController from "./AccountsController";
@@ -16,30 +17,36 @@ export default class UsersController {
 
   public async store(ctx: HttpContextContract) {
     const { request, response } = ctx;
-    const info = request.body().info = JSON.parse(request.body().info);
+    Log("user", "info : ", request.body());
+    const info = (request.body().info = JSON.parse(request.body().info));
 
     Log("user", "info : ", info);
-    let  user ;
+    let user;
     let mail: string;
+
     try {
+
       const profileId = await new ProfilesController().store(ctx);
+
       info.profileId = profileId;
       const favoritesId = await new FavoritesController().store(ctx);
+
       info.favoritesId = favoritesId;
       const adressId = await new AdressesController().store(ctx);
-      info.adressId = adressId;
-      info.email = adressId + "@gmail.com";
-      const {accountId, email } = await new AccountsController().store(ctx);
-      mail = email
-      user = new UserModel({
-      account: (accountId as string),
-    });
 
+      info.adressId = adressId;
+      info.email = Date.now().toString() + "@gmail.com";
+      const { accountId, email } = await new AccountsController().store(ctx);
+      mail = email;
+      user = new UserModel({
+        account: accountId as string,
+      });
     } catch (e) {
+
       Log("user", "err: ", e);
     }
 
-    if (!user) return response
+    if (!user) return response.status(404).send("operation not completed");
 
     try {
       await new Promise((resolve, reject) => {
@@ -52,14 +59,42 @@ export default class UsersController {
           resolve(user);
         });
       });
-    }catch(e){
-      Log('user', 'creation err : ', e.message );
+    } catch (e) {
+      Log("user", "creation err : ", e.message);
     }
-    response.send(request.body());
+     response.send(request.body());
   }
 
-  public async show({}: HttpContextContract) {
-    Log("user", "show");
+  public async show(ctx: HttpContextContract) {
+    const { request } = ctx;
+    const id = request.params().id;
+
+    const user = await UserModel.findOne(
+      {
+        _id: new mongoose.Types.ObjectId(id)._id,
+      },
+      {
+        __v: 0,
+      }
+    );
+    Log("user", "show", user);
+    if (!user) return { status: 404, message: "user not found" };
+    await user.populate({
+      path: "account",
+      select: "-__v -password",
+      populate: [
+        {
+          path: "adress",
+          select: "-__v",
+        },
+        {
+          path: "profile",
+          select: "-__v",
+        },
+      ],
+    });
+
+    return user;
   }
 
   public async edit({}: HttpContextContract) {

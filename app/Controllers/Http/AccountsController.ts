@@ -17,6 +17,8 @@ export default class AccountsController {
       profile: info.profileId,
       adress:  info.adressId,
       favorites:  info.favoritesId,
+      createdDate : Date.now(),
+      updatedDate : Date.now(),
     });
 
     await new Promise((resolve, reject) => {

@@ -15,6 +15,7 @@ export default class AdressesController {
       location: info.location,
       home: info.home,
       description: info.location_decription,
+      updatedDate: Date.now()
     });
 
     await new Promise((resolve, reject) => {

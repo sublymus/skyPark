@@ -1,14 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import mongoose_unique_validation from "mongoose-unique-validation";
 
-type a = {
-  [k: string]: {
-    model : string,
-  }
-}
-const A: a = {
-
-}
 
 let folderSchema = new Schema({
   refIds : {
@@ -18,7 +10,9 @@ let folderSchema = new Schema({
   folderName : {
     type : String,
     required : true
-  }
+  },
+  createdDate: Number
+
 });
 
 folderSchema.add(mongoose_unique_validation);
