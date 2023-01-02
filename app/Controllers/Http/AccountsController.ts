@@ -11,6 +11,7 @@ export default class AccountsController {
   public async store({ request }: HttpContextContract) {
     const info = request.body().info;
     const account = new AccountModel({
+      user : info.userId,
       name: info.name,
       email: info.email,
       password: info.password,

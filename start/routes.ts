@@ -24,6 +24,13 @@ Route.get('/', async () => {
   return { hello: 'world' }
 })
 
+
+
+Route.post('/login', 'AuthController.login')
+Route.post('/signup', 'AuthController.signup')
+
+Route.group(()=>{
+
 Route.resource('/user', 'UsersController').apiOnly();
 Route.resource('/account', 'AccountsController').apiOnly().except(['store']);
 Route.resource('/profile', 'ProfilesController').apiOnly().except(['store']);
@@ -31,3 +38,5 @@ Route.resource('/favorites', 'FavoritesController').apiOnly().except(['store']);
 Route.resource('/folder', 'FoldersController').apiOnly();
 Route.resource('/adress', 'AdressesController').apiOnly().except(['store']);
 Route.resource('/refid', 'ReFidsController').apiOnly().except(['update']);;
+
+}).middleware(['auth']);

@@ -17,28 +17,26 @@ export default class UsersController {
 
   public async store(ctx: HttpContextContract) {
     const { request, response } = ctx;
-    Log("user", "info : ", request.body());
-    const info = (request.body().info = JSON.parse(request.body().info));
+    const info =request.body().info;
 
     Log("user", "info : ", info);
     let user;
-    let mail: string;
-
     try {
-
+      const userId =  new mongoose.Types.ObjectId()._id;
+      info.userId = userId;
       const profileId = await new ProfilesController().store(ctx);
-
       info.profileId = profileId;
+      
       const favoritesId = await new FavoritesController().store(ctx);
-
       info.favoritesId = favoritesId;
+      
       const adressId = await new AdressesController().store(ctx);
-
       info.adressId = adressId;
+
       info.email = Date.now().toString() + "@gmail.com";
-      const { accountId, email } = await new AccountsController().store(ctx);
-      mail = email;
+      const { accountId } = await new AccountsController().store(ctx);
       user = new UserModel({
+        _id : userId,
         account: accountId as string,
       });
     } catch (e) {
@@ -48,21 +46,14 @@ export default class UsersController {
 
     if (!user) return response.status(404).send("operation not completed");
 
-    try {
-      await new Promise((resolve, reject) => {
+    Log('auth', user)
+
+    return await new Promise((resolve, reject) => {
         UserModel.create(user, (err) => {
           if (err) return reject({ err: "error", message: err.message });
-          const token = { email: mail, userId: user._id };
-          Log("user", "token : ", token);
-          response.encryptedCookie("token", token);
-          Log("allOk", "tout est zoo");
-          resolve(user);
+          resolve(user.id);
         });
       });
-    } catch (e) {
-      Log("user", "creation err : ", e.message);
-    }
-     response.send(request.body());
   }
 
   public async show(ctx: HttpContextContract) {

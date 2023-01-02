@@ -5,6 +5,9 @@ import FavoritesModel from "./FavoritesModel";
 import ProfileModel from "./ProfileModel";
 
 let accountSchema = new Schema({
+  user : {
+    type : Schema.Types.ObjectId,
+  },
   name: {
     type: String,
     trim: true,

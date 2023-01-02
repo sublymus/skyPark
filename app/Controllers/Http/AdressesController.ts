@@ -26,7 +26,7 @@ export default class AdressesController {
       });
     });
 
-    return adress;
+    return adress.id;
   }
 
   public async show({}: HttpContextContract) {}
