@@ -47,20 +47,19 @@ export default class AccountsController {
         {
           _id: new mongoose.Types.ObjectId(id)._id,
         },
-        {
-          name: request.body().name,
-          email: request.body().email,
-          password: request.body().password,
-          telephone: request.body().telephone,
-        },
+        { name : request.body().name,
+          email : request.body().email,
+          password : request.body().password,
+          telephone : request.body().telephone,
+           updatedDate: Date.now()},
         {
            returnOriginal: false
         }
       );
     } catch (e) {
-      return response.status(403).send("cannot modified");
+      return response.status(403).send("cannot modified info account");
     }
-   
+
     return response.status(201).send(account);
   }
 
