@@ -1,17 +1,23 @@
-import HttpContext , {HttpContextContract} from '@ioc:Adonis/Core/HttpContext'
+import {HttpContextContract} from '@ioc:Adonis/Core/HttpContext'
 
 const FR_MESSAGE = {
     BAD_AUTH : 'authentification non valider',
-    BAD_AUTH_SOUCIES : 't\'as quel soucies' 
+    BAD_AUTH_SOUCIES : 't\'as quel soucies',
+    NOT_DELETED : 'pas supprimable'
+}
+const RU_MESSAGE = {
+  BAD_AUTH : 'недействительная аутентификация',
+  BAD_AUTH_SOUCIES : 'в чем твоя проблема',
+  NOT_DELETED : 'недействительная'
+
 }
 const EN_MESSAGE = {
     BAD_AUTH : 'not valid authentification ',
-    BAD_AUTH_SOUCIES : 'what\'s your probleme' 
+    BAD_AUTH_SOUCIES : 'what\'s your probleme',
+    NOT_DELETED : 'not deleted',
+    NOT_FOUND : 'not found'
 }
-const RU_MESSAGE = {
-    BAD_AUTH : 'недействительная аутентификация',
-    BAD_AUTH_SOUCIES : 'в чем твоя проблема'
-}
+
 
 const ALL_MESSAGE ={
     FR_MESSAGE,
@@ -20,8 +26,8 @@ const ALL_MESSAGE ={
 }
 
 const Message =  async (ctx: HttpContextContract ,code : string)=>{
-    let language =  HttpContext.get()?.request.language(['fr', 'en', 'ru']);
-    language = language? language : 'en'
+    let language =  ctx.request.language(['fr', 'en', 'ru']);
+    language =  language? 'en' : 'en'
     return ALL_MESSAGE[language?.toUpperCase()+'_MESSAGE'][code]
 }
 export default Message;

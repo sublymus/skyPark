@@ -1,6 +1,7 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import mongoose from "mongoose";
 import Log from "sublymus_logger";
+import ERROR from "../../Exceptions/ERROR";
 import FavoritesModel from "../../Model/FavoritesModel";
 import FolderModel from "../../Model/FolderModel";
 
@@ -48,15 +49,8 @@ export default class FoldersController {
       _id: new mongoose.Types.ObjectId(id)._id,
     });
     if (!folder) return { status: 404, message: "folder don't exist" };
-    //  await folder.populate({
-    //     path: "folderName",
-    //     model: "folder",
-    //   });
-
     return folder;
   }
-
-  //  public async edit({}: HttpContextContract) {}
 
   public async update({ request }: HttpContextContract) {
     const info = (request.body().info = JSON.parse(request.body().info));
@@ -98,9 +92,19 @@ export default class FoldersController {
       Log("folder", "saved ", a);
     }
     Log("folder", folder);
-
     return { status: 202 };
   }
-
-  public async destroy({}: HttpContextContract) {}
+  public async destroy(ctx: HttpContextContract) {
+    const { request, response } = ctx;
+    Log("folder", request.body().folderId);
+    await FolderModel.findByIdAndDelete(
+      {
+        _id: request.body().folderId,
+      },
+      async (err, docs) => { // gerer les type
+        if (err) return await ERROR.NOT_DELETED(ctx, { target: "folder" });
+        // return response.status(200).send(docs);
+      }
+    ).clone();
+  }
 }

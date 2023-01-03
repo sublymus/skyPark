@@ -1,19 +1,18 @@
-import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import Log from 'sublymus_logger'
-import Error from '../Exceptions/Error'
+import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
+import Log from "sublymus_logger";
+import Error from "../Exceptions/ERROR";
 
 export default class Auth {
   public async handle(ctx: HttpContextContract, next: () => Promise<void>) {
-    const {request, response} = ctx
-    const token = request.encryptedCookie('token')
-    Log('token', token)
+    const { request, response } = ctx;
+    const token = request.encryptedCookie("token");
+    Log("token", token);
 
-   
-  if (!token){
-    const rest = await Error.BAD_AUTH(ctx)
-    return response.send(rest)
-  }
-  
-  await next()
+    if (!token) {
+      const rest = await Error.BAD_AUTH(ctx);
+      return response.send(rest);
+    }
+
+    await next();
   }
 }

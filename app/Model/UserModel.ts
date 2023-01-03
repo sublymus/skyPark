@@ -6,6 +6,7 @@ let userSchema = new Schema({
   account: {
     type: Schema.Types.ObjectId,
     ref: AccountModel.modelName,
+    require : true
   },
 });
 userSchema.add(mongoose_unique_validation);

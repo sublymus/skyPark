@@ -1,16 +1,15 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import mongoose from "mongoose";
 import Log from "sublymus_logger";
+import ERROR from "../../Exceptions/ERROR";
 import ProfileModel from "../../Model/ProfileModel";
 
 export default class ProfilesController {
   public async index({}: HttpContextContract) {}
 
-  //  public async create({}: HttpContextContract) {}
 
   public async store({ request }: HttpContextContract) {
     const info = request.body().info;
-
     const profile = new ProfileModel({
       message: info.profile_message,
       imgProfile: request.file("img-profile")?.clientName, // il faus definire le path et stoker user avant de sauvegarder le file
@@ -28,10 +27,6 @@ export default class ProfilesController {
 
     return profile.id;
   }
-
-  public async show({}: HttpContextContract) {}
-
-  //  public async edit({}: HttpContextContract) {}
 
   public async update({ request, response }: HttpContextContract) {
     let id = request.param("id");
@@ -60,5 +55,17 @@ export default class ProfilesController {
     return response.status(201).send(profile);
   }
 
-  public async destroy({}: HttpContextContract) {}
+  public async destroy(ctx: HttpContextContract) {
+    const { request } = ctx;
+    Log("profile", request.body().profileId);
+    await ProfileModel.findByIdAndDelete(
+      {
+        _id: request.body().profileId,
+      },
+      async (err) => { // gerer les type
+        if (err) return await ERROR.NOT_DELETED(ctx, { target: "profile" });
+       // return response.status(201).send(docs);
+      }
+    ).clone()
+  }
 }

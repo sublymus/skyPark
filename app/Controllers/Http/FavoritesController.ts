@@ -5,10 +5,6 @@ import FavoritesModel from "../../Model/FavoritesModel";
 import FoldersController from "./FoldersController";
 
 export default class FavoritesController {
-  public async index({}: HttpContextContract) {}
-
-  //public async create({}: HttpContextContract) {}
-
   public async store(ctx: HttpContextContract) {
     const info = ctx.request.body().info;
 
@@ -23,11 +19,10 @@ export default class FavoritesController {
         if (err) return reject(err);
         Log("user", "favorites cree ");
         resolve(favorites);
-        // reject({ err: "error", message: err.message });
       });
     });
 
-    info.favoritesID = favorites.id
+    info.favoritesID = favorites.id;
     await new FoldersController().store(ctx);
 
     return favorites.id;
@@ -46,15 +41,24 @@ export default class FavoritesController {
     await favorites.populate({
       path: "folders",
       model: "folder",
-      select : "-refIds -__v"
+      select: "-refIds -__v",
     });
 
     return favorites;
   }
+  public async destroy(ctx: HttpContextContract) {
+    const { request} = ctx;
+    Log("favorites", request.body().favoritesId);
+    let favorites = await FavoritesModel.findOne({
+      _id: request.body().favoritesId,
+    });
+    if (!favorites) return { status: 200, message: "favorite(s) don't exist" };
+    favorites.folders.forEach(async (folderId) => {
+      request.body().folderId = folderId;
+      await new FoldersController().destroy(ctx);
+    });
 
-  // public async edit({}: HttpContextContract) {}
+  return await favorites.remove();
 
-  public async update({}: HttpContextContract) {}
-
-  public async destroy({}: HttpContextContract) {}
+  }
 }

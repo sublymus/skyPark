@@ -1,13 +1,10 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import mongoose from "mongoose";
 import Log from "sublymus_logger";
+import ERROR from "../../Exceptions/ERROR";
 import AdressModel from "../../Model/AdressModel";
 
 export default class AdressesController {
-  public async index({}: HttpContextContract) {}
-
-  //public async create({}: HttpContextContract) {}
-
   public async store({ request }: HttpContextContract) {
     const info = request.body().info;
 
@@ -28,10 +25,6 @@ export default class AdressesController {
 
     return adress.id;
   }
-
-  public async show({}: HttpContextContract) {}
-
-  // public async edit({}: HttpContextContract) {}
 
   public async update({ request, response }: HttpContextContract) {
     let id = request.param("id");
@@ -60,5 +53,18 @@ export default class AdressesController {
     return response.status(201).send(address);
   }
 
-  public async destroy({}: HttpContextContract) {}
+  public async destroy(ctx: HttpContextContract) {
+    const { request } = ctx;
+    Log("adress", request.body().adressId);
+    await AdressModel.findByIdAndDelete(
+      {
+        _id: request.body().adressId,
+      },
+      async (err) => {
+        // gerer les type
+        if (err) return await ERROR.NOT_DELETED(ctx, { target: "adress" });
+       // return response.status(200).send(docs);
+      }
+    ).clone();
+  }
 }
