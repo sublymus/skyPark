@@ -1,7 +1,8 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import mongoose from "mongoose";
 import Log from "sublymus_logger";
-import ERROR from "../../Exceptions/ERROR";
+import Message from "../../Exceptions/Message";
+import ERROR from "../../Exceptions/STATUS";
 import UserModel from "../../Model/UserModel";
 import AccountsController from "./AccountsController";
 import AdressesController from "./AdressesController";
@@ -9,11 +10,10 @@ import FavoritesController from "./FavoritesController";
 import ProfilesController from "./ProfilesController";
 export default class UsersController {
   public async store(ctx: HttpContextContract) {
-    const { request, response } = ctx;
+    const { request } = ctx;
     const info = request.body().info;
-
     Log("user", "info : ", info);
-    let user;
+    let user: any;
     try {
       const userId = new mongoose.Types.ObjectId()._id;
       info.userId = userId;
@@ -35,19 +35,21 @@ export default class UsersController {
     } catch (e) {
       Log("user", "err: ", e);
     }
-
-    if (!user) return response.status(404).send("operation not completed");
+    if (!user)
+      return await ERROR.NOT_FOUND(ctx, { target: await Message(ctx, "USER") });
 
     Log("auth", user);
 
     return await new Promise((resolve, reject) => {
-      UserModel.create(user, (err) => {
-        if (err) return reject({ err: "error", message: err.message });
+      UserModel.create(user, async (err: Error) => {
+        if (err)
+          return reject(
+            await ERROR.NOT_FOUND(ctx, { target: await Message(ctx, "USER") })
+          );
         resolve(user.id);
       });
     });
   }
-
   public async show(ctx: HttpContextContract) {
     const { request } = ctx;
     const id = request.params().id;
@@ -60,8 +62,8 @@ export default class UsersController {
         __v: 0,
       }
     );
-    Log("user", "show", user);
-    if (!user) return { status: 404, message: "user not found" };
+    if (!user)
+      return await ERROR.NOT_FOUND(ctx, { target: await Message(ctx, "USER") });
     await user.populate({
       path: "account",
       select: "-__v -password",
@@ -86,29 +88,28 @@ export default class UsersController {
     let user = await UserModel.findOne({
       _id: new mongoose.Types.ObjectId(id)._id,
     });
-    if (!user ) return await ERROR.NOT_FOUND(ctx , {target : "user"});
-   user = await user.populate({
-      path : "account"
-    })
+    if (!user) return await ERROR.NOT_FOUND(ctx, { target: "user" });
+    user = await user.populate({
+      path: "account",
+    });
 
-const account :any = user.account
-if(!account) return await ERROR.NOT_FOUND(ctx , {target : "account"});
+    const account: any = user.account;
+    if (!account) return await ERROR.NOT_FOUND(ctx, { target: "account" });
     request.body().profileId = account.profile?._id.toString();
     request.body().favoritesId = account.favorites?._id.toString();
     request.body().adressId = account.adress?._id.toString();
     request.body().accountId = account._id.toString();
-
     try {
+    Log("user", request.body());
       await new ProfilesController().destroy(ctx);
       await new AdressesController().destroy(ctx);
       await new FavoritesController().destroy(ctx);
       await new AccountsController().destroy(ctx);
-    } catch(e) {
-      Log('oops', e)
+    } catch (e) {
+      Log("oops", e);
     }
 
-
-  await user.remove()
+    await user.remove();
     return "user deleted with succes";
   }
 }

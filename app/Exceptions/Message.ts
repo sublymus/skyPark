@@ -15,7 +15,13 @@ const EN_MESSAGE = {
     BAD_AUTH : 'not valid authentification ',
     BAD_AUTH_SOUCIES : 'what\'s your probleme',
     NOT_DELETED : 'not deleted',
-    NOT_FOUND : 'not found'
+    NOT_FOUND : 'not found',
+    ADRESS : 'adress',
+    ACCOUNT : 'account',
+    USER : 'user',
+    UNAUTHORIZED: 'Non autoriser',
+    FAVORITES : "favorites "
+
 }
 
 

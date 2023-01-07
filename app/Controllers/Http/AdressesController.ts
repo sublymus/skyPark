@@ -1,7 +1,8 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import mongoose from "mongoose";
 import Log from "sublymus_logger";
-import ERROR from "../../Exceptions/ERROR";
+import Message from "../../Exceptions/Message";
+import STATUS from "../../Exceptions/STATUS";
 import AdressModel from "../../Model/AdressModel";
 
 export default class AdressesController {
@@ -9,6 +10,7 @@ export default class AdressesController {
     const info = request.body().info;
 
     const adress = new AdressModel({
+      user: info.userId,
       location: info.location,
       home: info.home,
       description: info.location_decription,
@@ -26,15 +28,19 @@ export default class AdressesController {
     return adress.id;
   }
 
-  public async update({ request, response }: HttpContextContract) {
+  public async update(ctx: HttpContextContract) {
+    const { request, response } = ctx;
     let id = request.param("id");
     Log("address", "update", request.body());
     Log("address", "id", id);
-    let address;
+    let address: any;
+    const IdToken = request.params().token.id;
+
     try {
-      address = await AdressModel.findByIdAndUpdate(
+      address = await AdressModel.findOneAndUpdate(
         {
           _id: new mongoose.Types.ObjectId(id)._id,
+          user: IdToken,
         },
         {
           location: request.body().location,
@@ -47,23 +53,39 @@ export default class AdressesController {
         }
       );
     } catch (e) {
-      return response.status(403).send("cannot modified info adrress");
+      return await STATUS.NOT_FOUND(ctx, {
+        target: await Message(ctx, "ADRESS"),
+      });
     }
-
-    return response.status(201).send(address);
+    if (!address)
+      return await STATUS.BAD_AUTH(ctx, {
+        target: await Message(ctx, "not authorized thief"),
+      });
+    return response.send(address);
   }
 
   public async destroy(ctx: HttpContextContract) {
     const { request } = ctx;
+    // let id = request.body().adressId;
+    let id = request.param("id") || request.body().accountId;
+    let idB = request.body().accountId;
+    let idP = request.param("id") ;
+    Log("destroyAdress",{id , idB , idP})
+    const IdToken = request.params().token.id;
     Log("adress", request.body().adressId);
-    await AdressModel.findByIdAndDelete(
+    await AdressModel.findOneAndRemove(
       {
-        _id: request.body().adressId,
+        _id: idB,
+        user: IdToken,
       },
-      async (err) => {
-        // gerer les type
-        if (err) return await ERROR.NOT_DELETED(ctx, { target: "adress" });
-       // return response.status(200).send(docs);
+      async (err: Error) => {
+        if (err)
+          return await STATUS.NOT_DELETED(ctx, {
+            target: await Message(ctx, "ADRESS"),
+          });
+        return await STATUS.DELETED(ctx, {
+          target: await Message(ctx, "ADRESS"),
+        });
       }
     ).clone();
   }

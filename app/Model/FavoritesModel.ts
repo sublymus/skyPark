@@ -3,6 +3,9 @@ import mongoose_unique_validation from "mongoose-unique-validation";
 import FolderModel from "./FolderModel";
 
 let favoritesSchema = new Schema({
+  user : {
+    type : Schema.Types.ObjectId,
+  },
   folders : {
     type : [{
         type : Schema.Types.ObjectId,

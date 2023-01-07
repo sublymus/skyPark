@@ -1,6 +1,6 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Log from "sublymus_logger";
-import Error from "../../Exceptions/ERROR";
+import Error from "../../Exceptions/STATUS";
 import AccountModel from "../../Model/AccountModel";
 
 import UsersController from "./UsersController";
@@ -11,7 +11,9 @@ export default class AuthController {
   async login(ctx: HttpContextContract) {
     const { request, response } = ctx;
     let info = JSON.parse(request.body().info);
-    let account;
+    let body = request.body();
+    Log("token", { body });
+    let account: any;
     try {
       account = await AccountModel.findOne({
         email: info.email,
@@ -22,7 +24,6 @@ export default class AuthController {
     }
     Log("user", account);
     if (!account) return await Error.BAD_AUTH(ctx);
-
     const token = { email: info.email, name: info.name, id: account.user._id };
     response.encryptedCookie("token", token);
     return account.user._id + "c'est zoo , bienvenu" + account.name;
@@ -30,7 +31,7 @@ export default class AuthController {
   async signup(ctx: HttpContextContract) {
     let { request, response } = ctx;
     const info = (request.body().info = JSON.parse(request.body().info));
-    Log("auth", info);
+    Log("auth", { info });
     const result: any = await new UsersController().store(ctx);
 
     if (result?.err) {

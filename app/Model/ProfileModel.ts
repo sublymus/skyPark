@@ -2,6 +2,9 @@ import mongoose, { Schema } from "mongoose";
 import mongoose_unique_validation from "mongoose-unique-validation";
 
 let profileSchema = new Schema({
+  user : {
+    type : Schema.Types.ObjectId,
+  },
   imgProfile: {
     type : String,
     required : true

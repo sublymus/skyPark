@@ -1,6 +1,8 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import mongoose from "mongoose";
 import Log from "sublymus_logger";
+import Message from "../../Exceptions/Message";
+import ERROR from "../../Exceptions/STATUS";
 import FavoritesModel from "../../Model/FavoritesModel";
 import FoldersController from "./FoldersController";
 
@@ -12,6 +14,7 @@ export default class FavoritesController {
     Log("user", "info : ", info);
 
     const favorites = new FavoritesModel({
+      user: info.userId,
       folders: [],
     });
     await new Promise((resolve, reject) => {
@@ -28,37 +31,52 @@ export default class FavoritesController {
     return favorites.id;
   }
 
-  public async show({ request }: HttpContextContract) {
-    Log("favorites", "show");
+  public async show(ctx: HttpContextContract) {
+    const { request } = ctx;
+    const IdToken = request.params().token.id;
     const id = request.params().id;
 
-    Log("favorites", "show", id);
-
+    // Log("favorites", "token", IdToken);
     let favorites = await FavoritesModel.findOne({
       _id: new mongoose.Types.ObjectId(id)._id,
+      user: IdToken,
     });
-    if (!favorites) return { status: 404, message: "favorite(s) don't exist" };
+
+    Log("acsess", { IdToken, favorites });
+
+    if (!favorites) {
+      Log("!favorites", { favorites });
+      return await ERROR.BAD_AUTH(ctx, {
+        target: await Message(ctx, "UNAUTHORIZED"),
+      });
+    }
     await favorites.populate({
       path: "folders",
       model: "folder",
       select: "-refIds -__v",
     });
-
     return favorites;
   }
   public async destroy(ctx: HttpContextContract) {
-    const { request} = ctx;
-    Log("favorites", request.body().favoritesId);
+    const { request } = ctx;
+    const IdToken = request.params().token.id;
+    let id = request.body().favoritesId || request.param("id");
     let favorites = await FavoritesModel.findOne({
-      _id: request.body().favoritesId,
+      _id: new mongoose.Types.ObjectId(id)._id,
+      user: IdToken,
     });
-    if (!favorites) return { status: 200, message: "favorite(s) don't exist" };
+
+    if (!favorites)
+      return await ERROR.NOT_FOUND(ctx, {
+        target: await Message(ctx, "FAVORITES"),
+      });
+    Log("favorites", request.body().favoritesId);
+
     favorites.folders.forEach(async (folderId) => {
       request.body().folderId = folderId;
       await new FoldersController().destroy(ctx);
     });
 
-  return await favorites.remove();
-
+    return await favorites.remove();
   }
 }

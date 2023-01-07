@@ -3,6 +3,9 @@ import mongoose_unique_validation from "mongoose-unique-validation";
 
 
 let folderSchema = new Schema({
+  user : {
+    type : Schema.Types.ObjectId,
+  },
   refIds : {
     type: Object,
     required: true

@@ -9,11 +9,17 @@ Route.get('/', async () => {
 Route.post('/login', 'AuthController.login')
 Route.post('/signup', 'AuthController.signup')
 
-// Route.group(()=>{
-// }).middleware(['auth']);
-Route.resource('/user', 'UsersController').apiOnly().only(['show' , 'destroy']);
-Route.resource('/account', 'AccountsController').apiOnly().only([ 'update','destroy']);
-Route.resource('/profile', 'ProfilesController').apiOnly().only(['update']);
-Route.resource('/favorites', 'FavoritesController').apiOnly().only(['show']);
-Route.resource('/folder', 'FoldersController').apiOnly().only(['store', 'update' , 'destroy']);
-Route.resource('/adress', 'AdressesController').apiOnly().only(['update']);
+Route.group(()=>{
+  Route.resource('/user', 'UsersController').only(['show' , 'destroy']);
+}).middleware(['auth']);
+
+Route.group(()=>{
+  Route.resource('/account', 'AccountsController').only([ 'update']);
+  Route.resource('/profile', 'ProfilesController').only(['update']);
+  Route.resource('/favorites', 'FavoritesController').only(['show' , 'destroy']);
+  Route.resource('/folder', 'FoldersController').only(['store', 'update' , 'destroy']);
+  Route.resource('/adress', 'AdressesController').only(['update']);
+
+}).middleware(['access']);
+
+
