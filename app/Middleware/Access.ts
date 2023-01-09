@@ -12,9 +12,7 @@ export default class Access {
       Log("acessBad", { rest });
       return response.send(rest);
     }
-    let u = ctx.params.token = token;
-
-    Log("ctx", { body: u });
+     ctx.params.token = token;
     await next();
   }
 }

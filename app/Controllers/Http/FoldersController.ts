@@ -5,30 +5,44 @@ import Message from "../../Exceptions/Message";
 import STATUS from "../../Exceptions/STATUS";
 import FavoritesModel from "../../Model/FavoritesModel";
 import FolderModel from "../../Model/FolderModel";
+import UserModel from "../../Model/UserModel";
 
 export default class FoldersController {
   public async store(ctx: HttpContextContract) {
-    const { request } = ctx;
-    let info: any;
-    if (typeof request.body().info == "string") {
-      Log("folder", " string : ", true);
-      info = request.body().info = JSON.parse(request.body().info);
+    const { info, params } = ctx;
+    let tokenId = params?.token?.id;
+    Log("folder", { tokenId, info, params });
+
+    const userId = tokenId ? tokenId : info.userId;
+    let favoritesId;
+    if (tokenId) {
+      const user: any = await UserModel.findOne(
+        {
+          _id: userId,
+        },
+        {},
+        { populate: "account" }
+      );
+      if (!user)
+        return await STATUS.NOT_FOUND(ctx, {
+          target: await Message(ctx, "USER"),
+        });
+      info.userId = user._id;
+      favoritesId = user.account.favorites;
     } else {
-      info = request.body().info;
+      favoritesId = info.favoritesId;
     }
-    Log("folder", "favoritesId", info.favoritesID);
+
     const favorites = await FavoritesModel.findOne({
-      _id: info.favoritesID,
+      _id: favoritesId,
     });
 
     if (!favorites)
       return await STATUS.NOT_FOUND(ctx, {
         target: await Message(ctx, "FAVORITES"),
       });
-
-    Log("user", info);
     const folder = new FolderModel({
-      user: info.userId,
+      user: userId,
       folderName: info.folderName,
       refIds: {},
     });
@@ -38,11 +52,12 @@ export default class FoldersController {
           return reject(
             await STATUS.NOT_FOUND(ctx, {
               target: await Message(ctx, "FOLDER"),
+              detail: err.message,
             })
           );
-        Log("user", "folder cree ");
         favorites.folders.push(folder.id);
         await favorites.save();
+        // info.savedlist.push({id : folder._id ,idName : "folderId" ,controller : FoldersController})
         resolve(folder);
       });
     });
@@ -65,17 +80,17 @@ export default class FoldersController {
   }
 
   public async update(ctx: HttpContextContract) {
-   const  { request } = ctx;
-    const info = (request.body().info = JSON.parse(request.body().info));
+    const { request, info } = ctx;
     const IdToken = request.params().token.id;
-    let id = request.params().id;
-    Log("folder", { IdToken, id });
 
     const folder = await FolderModel.findOne({
       _id: request.params().id,
       user: IdToken,
     });
-    if (!folder) return await STATUS.BAD_AUTH(ctx , {target : await Message('FOLDER')});
+    if (!folder)
+      return await STATUS.BAD_AUTH(ctx, {
+        target: await Message(ctx, "FOLDER"),
+      });
     let changed = false;
 
     if (info.folderName) {
@@ -103,26 +118,23 @@ export default class FoldersController {
       changed = true;
     }
 
-    if (changed) {
-      const a = await folder.save();
-      Log("folder", "saved ", a);
-    }
-    Log("folder", folder);
-    return { status: 202 };
+    if (changed) await folder.save();
+    return await STATUS.UPDATE(ctx);
   }
   public async destroy(ctx: HttpContextContract) {
-    const { request } = ctx;
-    const IdToken = request.params().token.id;
-    Log("folder", request.body().folderId);
+    const { request, info } = ctx;
+    const folderId = request.param("id") ? request.param("id") : info.folderId;
+    const userId = info.userId ? info.userId : request.params().token.id;
     await FolderModel.findOneAndRemove(
       {
-        _id: request.body().folderId,
-        user: IdToken,
+        _id: folderId,
+        user: userId,
       },
       async (err: Error) => {
         if (err)
           return await STATUS.NOT_DELETED(ctx, {
             target: await Message(ctx, "FOLDER"),
+            detail: err.message,
           });
         return await STATUS.DELETED(ctx, {
           target: await Message(ctx, "FOLDER"),

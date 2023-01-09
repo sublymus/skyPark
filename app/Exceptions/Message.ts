@@ -19,8 +19,9 @@ const EN_MESSAGE = {
     ADRESS : 'adress',
     ACCOUNT : 'account',
     USER : 'user',
-    UNAUTHORIZED: 'Non autoriser',
-    FAVORITES : "favorites "
+    UNAUTHORIZED: 'not authorized',
+    FAVORITES : "favorites",
+    NOT_CREATED : "not create"
 
 }
 

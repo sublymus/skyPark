@@ -10,6 +10,9 @@ export default class AppProvider {
 
   public async boot () {
     // IoC container is ready
+    // const HttpContext = this.app.container.use('Adonis/Core/HttpContext')
+
+    // HttpContext.macro('info', {})
   }
 
   public async ready () {

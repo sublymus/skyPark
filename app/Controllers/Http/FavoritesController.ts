@@ -1,51 +1,43 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import mongoose from "mongoose";
-import Log from "sublymus_logger";
 import Message from "../../Exceptions/Message";
+import STATUS from "../../Exceptions/STATUS";
 import ERROR from "../../Exceptions/STATUS";
 import FavoritesModel from "../../Model/FavoritesModel";
 import FoldersController from "./FoldersController";
 
 export default class FavoritesController {
   public async store(ctx: HttpContextContract) {
-    const info = ctx.request.body().info;
+    const {info }= ctx;
 
     info.folderName = "mes préférences";
-    Log("user", "info : ", info);
-
     const favorites = new FavoritesModel({
       user: info.userId,
       folders: [],
     });
     await new Promise((resolve, reject) => {
-      FavoritesModel.create(favorites, (err) => {
-        if (err) return reject(err);
-        Log("user", "favorites cree ");
+      FavoritesModel.create(favorites, async (err) => {
+        if (err) return reject( await STATUS.NOT_CREATED(ctx , { target : await Message(ctx ,'FAVORITES') , detail : err.message}));
         resolve(favorites);
+        info.savedlist.push({id : favorites._id ,idName : "favoritesId" ,controller : FavoritesController})
       });
     });
 
-    info.favoritesID = favorites.id;
+    info.favoritesId = favorites.id;
     await new FoldersController().store(ctx);
-
     return favorites.id;
   }
 
   public async show(ctx: HttpContextContract) {
     const { request } = ctx;
-    const IdToken = request.params().token.id;
+    const tokenId = request.params().token.id;
     const id = request.params().id;
-
-    // Log("favorites", "token", IdToken);
     let favorites = await FavoritesModel.findOne({
       _id: new mongoose.Types.ObjectId(id)._id,
-      user: IdToken,
+      user: tokenId,
     });
 
-    Log("acsess", { IdToken, favorites });
-
     if (!favorites) {
-      Log("!favorites", { favorites });
       return await ERROR.BAD_AUTH(ctx, {
         target: await Message(ctx, "UNAUTHORIZED"),
       });
@@ -58,9 +50,9 @@ export default class FavoritesController {
     return favorites;
   }
   public async destroy(ctx: HttpContextContract) {
-    const { request } = ctx;
+    const { request ,info } = ctx;
     const IdToken = request.params().token.id;
-    let id = request.body().favoritesId || request.param("id");
+    let id = info.favoritesId;
     let favorites = await FavoritesModel.findOne({
       _id: new mongoose.Types.ObjectId(id)._id,
       user: IdToken,
@@ -70,10 +62,8 @@ export default class FavoritesController {
       return await ERROR.NOT_FOUND(ctx, {
         target: await Message(ctx, "FAVORITES"),
       });
-    Log("favorites", request.body().favoritesId);
-
     favorites.folders.forEach(async (folderId) => {
-      request.body().folderId = folderId;
+      info.folderId = folderId;
       await new FoldersController().destroy(ctx);
     });
 

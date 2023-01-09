@@ -1,8 +1,9 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Message from "./Message";
 type OptionShema = {
-  target?: string;
-  log?: (Satut: any) => void;
+  detail? : String,
+  target?: string,
+  log?: (Satut: any) => void
 };
 
 const STATUS = {
@@ -24,20 +25,28 @@ const STATUS = {
   async UPDATE(ctx: HttpContextContract, option?: OptionShema) {
     return await BuildSatut(ctx, this.UPDATE, 204, option);
   },
+  async CREATED(ctx: HttpContextContract, option?: OptionShema) {
+    return await BuildSatut(ctx, this.CREATED, 204, option);
+  },
+  async NOT_CREATED(ctx: HttpContextContract, option?: OptionShema) {
+    return await BuildSatut(ctx, this.NOT_CREATED, 204, option);
+  },
+
 };
 
 async function BuildSatut(
   ctx: HttpContextContract,
   code: string | Function,
   status: number,
-  option?: OptionShema
+  option?: OptionShema,
 ) {
   code = typeof code === "string" ? code : code.name;
   let message = await Message(ctx, code);
   message = (option?.target ? option?.target + " " : "") + message;
-  const Satut = { Satut: code, message, status };
-  ctx.response.status(status);
-  option?.log?.(Satut);
-  return Satut;
+ const detail  = (option?.detail ? option?.detail + " " : message)
+  const statut = { code, message, status , detail };
+  // ctx.response.status(status);
+  option?.log?.(statut);
+  return statut;
 }
 export default STATUS;

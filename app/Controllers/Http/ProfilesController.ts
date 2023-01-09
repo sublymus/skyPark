@@ -1,16 +1,13 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import mongoose from "mongoose";
-import Log from "sublymus_logger";
 import Message from "../../Exceptions/Message";
 import STATUS from "../../Exceptions/STATUS";
 import ProfileModel from "../../Model/ProfileModel";
 
-export default class ProfilesController {
-  public async index({}: HttpContextContract) {}
 
+export default class ProfilesController {
   public async store(ctx: HttpContextContract) {
-    const { request } = ctx;
-    const info = request.body().info;
+    const { request , info } = ctx;
     const profile = new ProfileModel({
       user: info.userId,
       message: info.profile_message,
@@ -24,23 +21,20 @@ export default class ProfilesController {
         if (err)
           return reject(
             await STATUS.NOT_DELETED(ctx, {
-              target: await Message(ctx, "ADRESS"),
+              target: await Message(ctx, "ADRESS"),detail : err.message
             })
           );
-        Log("user", "profile cree ");
+        info.savedlist.push({id : profile._id ,idName : "profileId" ,controller : ProfilesController})
         resolve(profile);
       });
     });
 
     return profile.id;
   }
-
   public async update(ctx: HttpContextContract) {
-    const { request, response } = ctx;
+    const { request, response , info } = ctx;
     let id = request.param("id");
     const IdToken = request.params().token.id;
-    Log("profile", "update", request.body());
-    Log("profile", "id", id);
     let profile: any;
     try {
       profile = await ProfileModel.findOneAndUpdate(
@@ -49,9 +43,9 @@ export default class ProfilesController {
           user: IdToken,
         },
         {
-          imgProfile: request.body().imgProfile,
-          banner: request.body().banner,
-          message: request.body().message,
+          imgProfile: info.imgProfile,
+          banner: info.banner,
+          message: info.message,
           updatedDate: Date.now(),
         },
         {
@@ -60,18 +54,15 @@ export default class ProfilesController {
       );
     } catch (e) {
       return await STATUS.NOT_DELETED(ctx, {
-        target: await Message(ctx, "ACCOUNT"),
+        target: await Message(ctx, "ACCOUNT"),detail : e.message
       });
     }
-
     return response.send(profile);
   }
-
   public async destroy(ctx: HttpContextContract) {
-    const { request } = ctx;
-    // Log("profile", request.body().profileId);
+    const { request ,info } = ctx;
     const IdToken = request.params().token.id;
-    const id = request.body().profileId;
+    const id = info.profileId;
     await ProfileModel.findOneAndRemove(
       {
         _id: id,
@@ -80,7 +71,7 @@ export default class ProfilesController {
       async (err: Error) => {
         if (err)
           return await STATUS.NOT_DELETED(ctx, {
-            target: await Message(ctx, "PROFILE"),
+            target: await Message(ctx, "PROFILE"),detail : err.message
           });
 
         return await STATUS.DELETED(ctx, {

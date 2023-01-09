@@ -1,14 +1,12 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import mongoose from "mongoose";
-import Log from "sublymus_logger";
 import Message from "../../Exceptions/Message";
 import STATUS from "../../Exceptions/STATUS";
 import AdressModel from "../../Model/AdressModel";
 
 export default class AdressesController {
-  public async store({ request }: HttpContextContract) {
-    const info = request.body().info;
-
+  public async store(ctx: HttpContextContract) {
+   const { info } = ctx
     const adress = new AdressModel({
       user: info.userId,
       location: info.location,
@@ -18,9 +16,13 @@ export default class AdressesController {
     });
 
     await new Promise((resolve, reject) => {
-      AdressModel.create(adress, (err) => {
-        if (err) return reject({ err: "adress error", message: err.message });
-        Log("user", "adress cree ");
+      AdressModel.create(adress,async (err) => {
+        if (err) return reject(await STATUS.NOT_CREATED(ctx, { target : await Message(ctx , 'ADRESS' ) , detail: err.message } ));
+        info.savedlist.push({
+          id: adress._id,
+          idName: "adressId",
+          controller: AdressesController,
+        });
         resolve(adress);
       });
     });
@@ -29,13 +31,10 @@ export default class AdressesController {
   }
 
   public async update(ctx: HttpContextContract) {
-    const { request, response } = ctx;
+    const { request, response, info } = ctx;
     let id = request.param("id");
-    Log("address", "update", request.body());
-    Log("address", "id", id);
     let address: any;
     const IdToken = request.params().token.id;
-
     try {
       address = await AdressModel.findOneAndUpdate(
         {
@@ -43,9 +42,9 @@ export default class AdressesController {
           user: IdToken,
         },
         {
-          location: request.body().location,
-          home: request.body().home,
-          description: request.body().description,
+          location: info.location,
+          home: info.home,
+          description: info.description,
           updatedDate: Date.now(),
         },
         {
@@ -54,34 +53,29 @@ export default class AdressesController {
       );
     } catch (e) {
       return await STATUS.NOT_FOUND(ctx, {
-        target: await Message(ctx, "ADRESS"),
+        target: await Message(ctx, "ADRESS"), detail : e.message
       });
     }
     if (!address)
       return await STATUS.BAD_AUTH(ctx, {
-        target: await Message(ctx, "not authorized thief"),
+        target: await Message(ctx, "not authorized thief")
       });
     return response.send(address);
   }
 
   public async destroy(ctx: HttpContextContract) {
-    const { request } = ctx;
-    // let id = request.body().adressId;
-    let id = request.param("id") || request.body().accountId;
-    let idB = request.body().accountId;
-    let idP = request.param("id") ;
-    Log("destroyAdress",{id , idB , idP})
+    const { request, info } = ctx;
+    let id = info.adressId;
     const IdToken = request.params().token.id;
-    Log("adress", request.body().adressId);
     await AdressModel.findOneAndRemove(
       {
-        _id: idB,
+        _id: id,
         user: IdToken,
       },
       async (err: Error) => {
         if (err)
           return await STATUS.NOT_DELETED(ctx, {
-            target: await Message(ctx, "ADRESS"),
+            target: await Message(ctx, "ADRESS"),detail : err.message
           });
         return await STATUS.DELETED(ctx, {
           target: await Message(ctx, "ADRESS"),
